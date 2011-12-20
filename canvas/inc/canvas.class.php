@@ -173,9 +173,9 @@ class PluginCanvasCanvas {
 //         echo implode(",\n", $options);
 //         $link = $root->getFormURL();
 //         $link .= (strpos($link,'?') ? '&amp;':'?').'id=';
-      
-      
-      
+
+
+
       $link= array();
       foreach ($items as $id => $node) {
          $input = array();
@@ -196,7 +196,7 @@ class PluginCanvasCanvas {
             $input['root_id'] = $node['ancestors_id'];
             $input['color'] = 'rgb(51,12,255)';
             $input['width'] = 3;
-            $input['type'] = 'line';            
+            $input['type'] = 'line';
             $link['edges'][] = $input;
          }
       }
@@ -212,22 +212,36 @@ class PluginCanvasCanvas {
                                  'nodeFontColor' => 'rgb(29,34,43)',
                                  'showAnimation' => false);
 
-         
+
          echo "
     <!--[if IE]><script type='text/javascript' src='".GLPI_ROOT."/plugins/canvas/lib/canvas/excanvas.js'></script><![endif]-->
     <script type='text/javascript' src='".GLPI_ROOT."/plugins/canvas/lib/canvas/canvasXpress.min.js'></script>";
 
+         $link_to_form = $root->getFormURL();
+         $link_to_form .= (strpos($link_to_form,'?') ? '&amp;':'?').'id=';
+
+
          echo "<script>
 var showcanvas = function () {
 new CanvasXpress(
-   'canvas', 
-   ".json_encode($link).", 
-   ".json_encode($canvas_config).");
+   'canvas',
+   ".json_encode($link).",
+   ".json_encode($canvas_config).", {
+            click: function(obj) {
+               if (obj.nodes) {
+                  var items_id=obj.nodes[0].items_id;
+                  window.location.href='$link_to_form'+items_id;
+               } else {
+                  var root_id=obj.edges[0].root_id;
+                  window.location.href='".$_SERVER['PHP_SELF']."?root_id='+root_id;
+               }
+           }
+    });
 }
 </script>";
 
-         
-echo '<canvas id="canvas" width="613" height="500"></canvas>';
+
+//         echo '<canvas id="canvas" width="613" height="500"></canvas>';
 //         echo ", {
 //            click: function(obj) {
 //               if (obj.nodes) {
@@ -253,7 +267,7 @@ echo '<canvas id="canvas" width="613" height="500"></canvas>';
             }
          }
          echo "</td></tr></table>";
-         
+
          echo "<script>showcanvas();</script>";
 
       }
