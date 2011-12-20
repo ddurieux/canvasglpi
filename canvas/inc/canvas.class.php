@@ -211,16 +211,6 @@ class PluginCanvasCanvas {
                                  'backgroundGradient1Color' => 'rgb(226,236,248)',
                                  'nodeFontColor' => 'rgb(29,34,43)',
                                  'showAnimation' => false);
-         
-        $canvas_config = array('graphType' => 'Network',
-                               'showAnimation' => true,
-                               'gradient' => true,
-                               'backgroundGradient2Color' => "rgb(112,179,222)",
-                               'backgroundGradient1Color' => "rgb(226,236,248)",
-                               'nodeFontColor' => 'rgb(29,34,43)',
-                               'showNetworkRadialLayout' => true,
-                               'networkLayoutType' => 'radial');
-         
 
          
          echo "
