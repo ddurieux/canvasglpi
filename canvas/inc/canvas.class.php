@@ -121,7 +121,7 @@ class PluginCanvasCanvas {
    }
 
    private static function drawCanvas($root, $items, $ancestors, $params) {
-      global $LANG;
+      global $LANG,$CFG_GLPI;
 
 //      $nodes = array();
 //      $edges = array();
@@ -181,7 +181,12 @@ class PluginCanvasCanvas {
          $input = array();
          $input['id'] = "i".$node['id'];
          $input['name'] = $node['name'];
-         $input['shape'] = 'square';
+         //$input['shape'] = 'square';
+            $pics = array('computer', 'laptop', 'printer', 'server');
+            $input['shape'] = 'image';
+            $input['imagePath'] = 'http://'.$_SERVER['SERVER_ADDR'].$CFG_GLPI['root_doc'].
+                    '/plugins/canvas/pics/'.$pics[rand(0, 3)].'.png';
+         
          $input['color'] = 'rgb(255,0,0)';
          $input['size'] = '2';
          $input['group'] = $node['entities_id'];
