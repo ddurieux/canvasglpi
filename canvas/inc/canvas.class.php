@@ -88,7 +88,8 @@ class PluginCanvasCanvas {
             $items[0] = array('canvas_id' => 0,
                               'name' => 'root',
                               'entities_id' => 0,
-                              'ancestors_id' => 0);
+                              'ancestors_id' => 0,
+                              'id' => 0);
          }
 
          foreach ($DB->request($query) as $item_entry) {
@@ -96,7 +97,8 @@ class PluginCanvasCanvas {
             $items[$item_entry['id']] = array('canvas_id' => $canvas_id,
                                               'name' => $item_entry['name'],
                                               'entities_id' => $item_entry['entities_id'],
-                                              'ancestors_id' => $item_entry[$foreignKeyField]);
+                                              'ancestors_id' => $item_entry[$foreignKeyField],
+                                              'id' => $item_entry['id']);
             $canvas_id++;
          }
 
@@ -121,25 +123,85 @@ class PluginCanvasCanvas {
    private static function drawCanvas($root, $items, $ancestors, $params) {
       global $LANG;
 
-      $nodes = array();
-      $edges = array();
+//      $nodes = array();
+//      $edges = array();
+//      foreach ($items as $id => $node) {
+//         $nodes[] = "{id: 'Id" . $node['canvas_id'] . "', name:'" . $node['name'] . "', group:" .
+//                    $node['entities_id'] . ", items_id:$id,nodes_id:" . $node['ancestors_id'] . "}";
+//         if (($node['ancestors_id'] != $id) && (isset($items[$node['ancestors_id']]))) {
+//            $edges[] = "{id1:'Id" . $items[$node['ancestors_id']]['canvas_id'] .
+//                       "',  id2:'Id" . $node['canvas_id']."', value:1, root_id:" .
+//                       $node['ancestors_id'] . "}";
+//         }
+//      }
+//
+//      if (count($nodes) > 0) {
+//
+//         echo "
+//    <!--[if IE]><script type='text/javascript' src='../lib/canvas/excanvas.js'></script><![endif]-->
+//    <script type='text/javascript' src='../lib/canvas/canvasXpress.min.js'></script>";
+//
+//         $canvas_options = array('graphType' => 'Network',
+//                                 'colorNodeBy' => 'group',
+//                                 'indicatorCenter' => 'rainbow',
+//                                 'layoutTime' => 30,
+//                                 'maxIterations' => 80,
+//                                 'gradient' => true,
+//                                 'backgroundGradient2Color' => 'rgb(112,179,222)',
+//                                 'backgroundGradient1Color' => 'rgb(226,236,248)',
+//                                 'nodeFontColor' => 'rgb(29,34,43)',
+//                                 'showAnimation' => false,
+//                                 "networkLayoutType" => "radial");
+//
+//         echo "<script>
+//      var canvas = function () {
+//         new CanvasXpress('canvas', {";
+//         echo "nodes: [\n\t".implode(",\n\t", $nodes)."],";
+//         echo "edges: [\n\t".implode(",\n\t", $edges)."]";
+//         echo "}, {";
+//
+//         $options = array();
+//         foreach ($canvas_options as $key => $value) {
+//            if (is_bool($value)) {
+//               $options[] = "$key: ".($value ? 'true' : 'false');
+//            } elseif (is_numeric($value)) {
+//               $options[] = "$key: $value";
+//            } else {
+//               $options[] = "$key: '$value'";
+//            }
+//         }
+//         echo implode(",\n", $options);
+//         $link = $root->getFormURL();
+//         $link .= (strpos($link,'?') ? '&amp;':'?').'id=';
+      
+      
+      
+      $link= array();
       foreach ($items as $id => $node) {
-         $nodes[] = "{id: 'Id" . $node['canvas_id'] . "', name:'" . $node['name'] . "', group:" .
-                    $node['entities_id'] . ", items_id:$id,nodes_id:" . $node['ancestors_id'] . "}";
+         $input = array();
+         $input['id'] = "i".$node['id'];
+         $input['name'] = $node['name'];
+         $input['shape'] = 'square';
+         $input['color'] = 'rgb(255,0,0)';
+         $input['size'] = '2';
+         $input['group'] = $node['entities_id'];
+         $input['items_id'] = $id;
+         $input['nodes_id'] = $node['ancestors_id'];
+         $link['nodes'][] = $input;
          if (($node['ancestors_id'] != $id) && (isset($items[$node['ancestors_id']]))) {
-            $edges[] = "{id1:'Id" . $items[$node['ancestors_id']]['canvas_id'] .
-                       "',  id2:'Id" . $node['canvas_id']."', value:1, root_id:" .
-                       $node['ancestors_id'] . "}";
+            $input = array();
+            $input['id1'] = "i".$node['id'];
+            $input['id2'] = "i".$node['ancestors_id'];
+            $input['value'] = 1;
+            $input['root_id'] = $node['ancestors_id'];
+            $input['color'] = 'rgb(51,12,255)';
+            $input['width'] = 3;
+            $input['type'] = 'line';            
+            $link['edges'][] = $input;
          }
       }
-
-      if (count($nodes) > 0) {
-
-         echo "
-    <!--[if IE]><script type='text/javascript' src='../lib/canvas/excanvas.js'></script><![endif]-->
-    <script type='text/javascript' src='../lib/canvas/canvasXpress.min.js'></script>";
-
-         $canvas_options = array('graphType' => 'Network',
+      if (count($link['nodes']) > 0) {
+         $canvas_config = array('graphType' => 'Network',
                                  'colorNodeBy' => 'group',
                                  'indicatorCenter' => 'rainbow',
                                  'layoutTime' => 30,
@@ -149,40 +211,47 @@ class PluginCanvasCanvas {
                                  'backgroundGradient1Color' => 'rgb(226,236,248)',
                                  'nodeFontColor' => 'rgb(29,34,43)',
                                  'showAnimation' => false);
+         
+        $canvas_config = array('graphType' => 'Network',
+                               'showAnimation' => true,
+                               'gradient' => true,
+                               'backgroundGradient2Color' => "rgb(112,179,222)",
+                               'backgroundGradient1Color' => "rgb(226,236,248)",
+                               'nodeFontColor' => 'rgb(29,34,43)',
+                               'showNetworkRadialLayout' => true,
+                               'networkLayoutType' => 'radial');
+         
+
+         
+         echo "
+    <!--[if IE]><script type='text/javascript' src='".GLPI_ROOT."/plugins/canvas/lib/canvas/excanvas.js'></script><![endif]-->
+    <script type='text/javascript' src='".GLPI_ROOT."/plugins/canvas/lib/canvas/canvasXpress.min.js'></script>";
 
          echo "<script>
-      var canvas = function () {
-         new CanvasXpress('canvas', {";
-         echo "nodes: [\n\t".implode(",\n\t", $nodes)."],";
-         echo "edges: [\n\t".implode(",\n\t", $edges)."]";
-         echo "}, {";
+var showcanvas = function () {
+new CanvasXpress(
+   'canvas', 
+   ".json_encode($link).", 
+   ".json_encode($canvas_config).");
+}
+</script>";
 
-         $options = array();
-         foreach ($canvas_options as $key => $value) {
-            if (is_bool($value)) {
-               $options[] = "$key: ".($value ? 'true' : 'false');
-            } elseif (is_numeric($value)) {
-               $options[] = "$key: $value";
-            } else {
-               $options[] = "$key: '$value'";
-            }
-         }
-         echo implode(",\n", $options);
-         $link = $root->getFormURL();
-         $link .= (strpos($link,'?') ? '&amp;':'?').'id=';
-         echo "}, {
-            click: function(obj) {
-               if (obj.nodes) {
-                  var items_id=obj.nodes[0].items_id;
-                  window.location.href='".$link."'+items_id;
-               } else {
-                  var root_id=obj.edges[0].root_id;
-                  window.location.href='".$_SERVER['PHP_SELF']."?root_id='+root_id;
-               }
-            }
-       });
-      }
-    </script>";
+         
+echo '<canvas id="canvas" width="613" height="500"></canvas>';
+//         echo ", {
+//            click: function(obj) {
+//               if (obj.nodes) {
+//                  var items_id=obj.nodes[0].items_id;
+//                  window.location.href='".json_encode($link)."'+items_id;
+//               } else {
+//                  var root_id=obj.edges[0].root_id;
+//                  window.location.href='".$_SERVER['PHP_SELF']."?root_id='+root_id;
+//               }
+//            }
+//       });
+//      }
+
+
 
          echo "<table><tr><td>";
          echo "<canvas id='canvas' width='700' height='500'></canvas>";
@@ -194,6 +263,8 @@ class PluginCanvasCanvas {
             }
          }
          echo "</td></tr></table>";
+         
+         echo "<script>showcanvas();</script>";
 
       }
 
